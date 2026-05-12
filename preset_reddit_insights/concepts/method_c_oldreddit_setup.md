@@ -1,17 +1,20 @@
-# Method_C_OldReddit_Setup — комментарии через old.reddit
+# Method_C_OldReddit_Setup — comments via old.reddit
 
-## Когда использовать
-Метод **C**: загрузка дерева комментариев через `https://old.reddit.com/comments/{post_id}.json?limit=...` (без браузера).
+## When to use
+Method **C**: load comment trees from `https://old.reddit.com/comments/{post_id}.json?limit=...` (no browser).
 
-## Типичное сочетание
-Обычно **B → находим посты → C → подтягиваем комментарии** для ограниченного числа постов (параметр `max_posts_for_comments`).
+## Typical combination
+Usually **B → find posts → C → fetch comments** for a capped number of posts (`max_posts_for_comments`).
 
-## Плюсы / минусы
-- **Плюсы:** до **500** комментариев за запрос (верхний уровень листинга; вложенные ответы — в поле `replies`); без JS.
-- **Минусы:** неофициальный путь; Reddit может изменить поведение; глубокие деревья требуют обхода `replies`.
+## Pros / cons
+- **Pros:** Up to **500** comments per request at the top listing (nested replies in `replies`); no JS.
+- **Cons:** Unofficial path; Reddit may change behavior; deep trees need `replies` walking.
 
-## Что подготовить
-Тот же осмысленный `User-Agent`, что и для B (KV `reddit_app_user_agent` рекомендуется).
+## What to prepare
+Use the same descriptive **`User-Agent`** as for **B** — KV `reddit_app_user_agent` (see master concept: compose or **generate a draft** for the user, then KV).
 
-## Поведение пресета
-Эксперт `reddit_fetch_comments` читает файл листингов от `reddit_fetch_pages`, извлекает `post_id`, для каждого поста (до лимита) запрашивает old.reddit JSON и сохраняет сырой агрегат в файл для нормализации.
+## Preset behavior
+Expert `reddit_fetch_comments` reads the listings file from `reddit_fetch_pages`, extracts `post_id`, fetches old.reddit JSON per post (up to the cap), and writes raw JSON for normalization.
+
+## Execution target
+Same as methods **A** and **B**: rely on **Extella’s per-user resolved local target** for file output — no shared default device UUID in docs.

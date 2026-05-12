@@ -1,53 +1,59 @@
 # Reddit Insights → Excel (master)
 
-## Назначение
-Пресет проводит пользователя от **явного запуска** до **Excel-файла** с упоминаниями в Reddit: посты и (опционально) комментарии, ссылки, базовые поля авторов из публичных данных.
+## Purpose
+This preset guides the user from an **explicit start** to an **Excel workbook** of Reddit mentions: posts and (optionally) comments, links, and basic author fields available from public Reddit data.
 
-## Точка входа (обязательно)
-Пользователь **самым первым сообщением** явно вызывает этот концепт **по точному имени**, например:
-«Запусти **Reddit Insights → Excel (master)**» — заголовок этого концепта должен совпадать с записью в базе Extella.
+## Mandatory entry point
+The user must **explicitly invoke this master concept by its exact title** in the first intentional message, for example:
+**Run `Reddit Insights → Excel (master)`** — the title must match the concept record in Extella.
 
-До этого агент **не** начинает сбор и **не** запрашивает ключевые слова.
+Until then, the agent **must not** start collection and **must not** ask for keywords.
 
-## Машина состояний диалога
-0. **Ожидание входа:** если пользователь не назвал мастер-концепт явно — вежливо попросить использовать фразу из раздела «Точка входа».
-1. **Выбор метода A / B / C** — показать таблицу (см. подконцепты методов). Кратко: плюсы/минусы. Дождаться явного выбора буквы.
-2. **Онбординг метода:** открыть соответствующий подконцепт (`Method_A_OAuth_Setup`, `Method_B_JSON_Setup`, `Method_C_OldReddit_Setup`) и провести по шагам (KV, Reddit app для A, локальный `target` для Excel).
-3. **Сбор темы:** ключевые слова или тема; опционально субреддит(ы); сортировка; горизонт времени; `max_pages`; нужны ли комментарии и лимит на посты.
-4. **Подтверждение:** кратко резюмировать параметры и попросить «ОК».
-5. **Запуск экспертов (локально):** убедиться, что выбран **target** устройства Extella Desktop; затем последовательно вызвать:
-   - `reddit_kv_check` (для **всех** методов: для A — ключи OAuth, для B/C — в т.ч. непустой `app_user_agent`),
-   - `reddit_discover` → `reddit_fetch_pages` → `reddit_fetch_comments` (если включено) → `reddit_normalize_records` → `reddit_export_xlsx`.
+## Dialogue state machine
+0. **Awaiting entry:** If the user has not named the master concept, politely ask them to use the phrase from **Mandatory entry point**.
+1. **Choose method A / B / C** — show the table (see method sub-concepts). Short pros/cons. Wait for an explicit letter.
+2. **Method onboarding:** Open the matching sub-concept (`Method_A_OAuth_Setup`, `Method_B_JSON_Setup`, `Method_C_OldReddit_Setup`) and walk through steps (KV for Reddit app on **A**; `reddit_app_user_agent` for all; `output_dir` for Excel paths).
+3. **Collect topic:** keywords or topic; optional subreddit(s); sort; time window; `max_pages`; whether to fetch comments and limits on posts/comments.
+4. **Confirm:** Short recap; ask for approval (e.g. “OK”).
+5. **Run experts (local filesystem output):** Run the chain below. **Do not** ask the user for a device UUID or document a shared “default target”. Extella resolves the **per-user execution target** (the user’s bound local runtime / device) when experts need to write files to disk — use the same local execution path the product uses for that user. Then call, in order:
+   - `reddit_kv_check` (for **all** methods: **A** — OAuth keys; **B/C** — including non-empty `app_user_agent`),
+   - `reddit_discover` → `reddit_fetch_pages` → `reddit_fetch_comments` (if enabled) → `reddit_normalize_records` → `reddit_export_xlsx`.
 
-## Матрица методов (кратко)
-| Метод | Суть | Когда |
-|-------|------|--------|
-| **A** | Официальный OAuth (client_credentials для чтения публичных данных) | Нужна стабильность и предсказуемость |
-| **B** | Публичные `.json` страницы (`search.json`, листинги субреддитов) | Быстрый старт без OAuth |
-| **C** | Листинги как у **B**; комментарии через **old.reddit** (`comments_engine=C` по умолчанию) | Нужны ветки обсуждений без OAuth |
+## Method matrix (short)
+| Method | What it is | When |
+|--------|------------|------|
+| **A** | Official OAuth (`client_credentials` for public read) via `oauth.reddit.com` | You want stability and predictable limits |
+| **B** | Public `.json` listings (`search.json`, subreddit listings) without OAuth | Fast start, no Reddit app setup |
+| **C** | Same listings as **B**; comment trees via **old.reddit** (`comments_engine=C` by default) | You need discussion threads without OAuth |
 
-Подробности и пошаговые инструкции — **только** в подконцептах методов.
+Details live only in the method sub-concepts.
 
-## Особый случай
-Если в первом сообщении пользователь назвал мастер-концепт **и сразу** набросал ключевые слова: **сначала** завершить шаг 1–2 (метод и онбординг), **затем** принять/уточнить формулировку темы.
+## Special case
+If the first message names the master concept **and** already includes keywords: still complete steps **1–2** (method + onboarding), **then** accept or refine the topic wording.
 
-## Юридическая и этическая рамка
-Только **публичные** посты/комментарии; умеренные объёмы; соблюдать лимиты и `User-Agent`; не обходить модерацию Reddit и не поощрять нарушение ToS.
+## Legal / ethical
+Only **public** posts/comments; moderate volume; respect rate limits and `User-Agent`; do not encourage ToS violations or moderation bypass.
 
-## Связанные концепты
+## Related concepts
 - `Method_A_OAuth_Setup`
 - `Method_B_JSON_Setup`
 - `Method_C_OldReddit_Setup`
 - `Excel_Output_Contract`
 - `RateLimit_Policy`
-- `Reddit_JSON_Spike_Results` (эмпирические дефолты после спайка)
+- `Reddit_JSON_Spike_Results` (empirical defaults after spike)
 
-## KV-ключи (имена без значений)
-- `reddit_client_id`, `reddit_client_secret` — для метода **A** (значения только в KV).
-- Пользователь может задать `reddit_app_user_agent` (строка идентификации приложения) — рекомендуется.
+## KV keys (names only — never values in concepts)
+- `reddit_client_id`, `reddit_client_secret` — for method **A** (values only in KV).
+- `reddit_app_user_agent` — **recommended for A, B, and C** (see below).
 
-## Дефолты лимитов (после спайка)
-- Задержка между страницами: **2.0–4.0 с** (jitter).
-- `max_pages` по умолчанию: **5**.
-- `comment_limit` на пост (old.reddit): по умолчанию **100**, максимум ориентир **500** (как в публичных гайдах; увеличение — на риске пользователя).
-- При **429**: уважать `Retry-After`, иначе backoff **60 с**, до **3** повторов.
+## `reddit_app_user_agent` — what it is and how to help the user
+- Reddit expects a **unique, descriptive `User-Agent`** for HTTP access. It is **not** copied from a “Reddit settings” page — the author **defines** a stable string (see [Reddit API rules](https://github.com/reddit-archive/reddit/wiki/API) for the usual shape).
+- **Good pattern:** `AppName/semver (by /u/RedditUsername; contact: email or URL)`.
+- **Where it “comes from”:** The user (or you) composes it from: app label (e.g. `EstellaRedditInsights`), version (`1.0`), their Reddit username if they have one (`by /u/...`), and optional contact.
+- **Agent behavior:** If the user does not know what to put, **generate a draft** for them, e.g. `EstellaRedditInsights/1.0 (by /u/<their_username>; contact: <ask once>)`, let them edit/confirm, then save to KV as `reddit_app_user_agent`.
+
+## Default limits (from spike)
+- Jitter between pages: **2.0–4.0 s**.
+- Default `max_pages`: **5**.
+- Default `comment_limit` per post (old.reddit): **100**, practical ceiling **500** (user’s risk if higher).
+- On **429**: honor `Retry-After`, else backoff **60 s**, up to **3** retries.

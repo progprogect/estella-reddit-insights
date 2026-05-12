@@ -1,73 +1,78 @@
-# Preset: Reddit Insights → Excel (локально)
+# Preset: Reddit Insights → Excel (local)
 
-Пресет Extella: от **явного вызова мастер-концепта** до **Excel** с постами и (опционально) комментариями Reddit.
+Extella preset: from **explicit master-concept invocation** to an **Excel** workbook of Reddit posts and optional comments.
 
-## Состав
+## Contents
 
-| Путь | Назначение |
-|------|------------|
-| [concepts/master_reddit_insights.md](concepts/master_reddit_insights.md) | Мастер-концепт (точка входа по имени) |
-| [concepts/method_*.md](concepts/) | Инструкции по методам A / B / C |
-| [concepts/excel_output_contract.md](concepts/excel_output_contract.md) | Контракт колонок Excel |
-| [concepts/rate_limit_policy.md](concepts/rate_limit_policy.md) | Лимиты и 429 |
-| [concepts/reddit_json_spike_results.md](concepts/reddit_json_spike_results.md) | Выводы спайка |
-Исходники экспертов начинаются с `$extens("include.py")` — это **валидно только в Extella**; локальный `python3 -m py_compile` по этим файлам не используется.
-| [spike/spike_reddit_json.py](spike/spike_reddit_json.py) | Локальный спайк HTTP (повторяемый) |
-| [SPIKE_RESULTS.md](SPIKE_RESULTS.md) | Артефакт последнего спайка |
-| [scripts/bootstrap_api.py](scripts/bootstrap_api.py) | Публикация концептов и экспертов в Extella |
-| [AGENT_SYSTEM_PROMPT.md](AGENT_SYSTEM_PROMPT.md) | Фрагмент системного промпта агента |
+| Path | Purpose |
+|------|---------|
+| [concepts/master_reddit_insights.md](concepts/master_reddit_insights.md) | Master concept (entry by title) — **English** |
+| [concepts/method_*.md](concepts/) | Method **A** / **B** / **C** setup — **English** |
+| [concepts/excel_output_contract.md](concepts/excel_output_contract.md) | Excel columns contract — **English** |
+| [concepts/rate_limit_policy.md](concepts/rate_limit_policy.md) | Limits and 429 — **English** |
+| [concepts/reddit_json_spike_results.md](concepts/reddit_json_spike_results.md) | Spike takeaways — **English** |
+| [experts/*.py](experts/) | Expert sources (`fython`; `$extens` — valid only under Extella) |
+| [spike/spike_reddit_json.py](spike/spike_reddit_json.py) | Repeatable local HTTP spike |
+| [SPIKE_RESULTS.md](SPIKE_RESULTS.md) | Last spike artifact |
+| [scripts/bootstrap_api.py](scripts/bootstrap_api.py) | Upload concepts + experts to Extella |
+| [AGENT_SYSTEM_PROMPT.md](AGENT_SYSTEM_PROMPT.md) | Agent system-prompt fragment |
 
-## Мастер-концепт: имя для вызова
+## Master concept: how to invoke
 
-Пользователь должен называть концепт **точно как первая строка-заголовок в базе**. В исходнике зафиксировано:
+The user must use the **exact** title (first line of the concept body):
 
 **`Reddit Insights → Excel (master)`**
 
-Пример: «Запусти **Reddit Insights → Excel (master)**».
+Example: **Run `Reddit Insights → Excel (master)`**
 
-## Локальный запуск экспертов
+## Local execution and `target`
 
-1. Установите **Extella Desktop**, войдите в аккаунт.
-2. Вызовите экспертов с параметром **`target`** = UUID вашего устройства (см. [Extella CLI.md](../Extella%20CLI.md)), чтобы файлы писались на ваш ПК.
-3. `output_dir`, например `~/Downloads/EstellaReddit` — каталог будет создан при необходимости.
+- **Do not** ask users to copy a preset “default” device UUID from this README.
+- For filesystem output, use **Extella’s per-user local execution** so the platform resolves the correct **target** for the signed-in user’s bound device.
+- Install **Extella Desktop** and stay signed in when local disk access is required.
 
-## KV-ключи (рекомендации)
+## `reddit_app_user_agent`
 
-| Ключ | Назначение |
-|------|------------|
-| `reddit_client_id` | Метод **A** (OAuth) |
-| `reddit_client_secret` | Метод **A** |
-| `reddit_app_user_agent` | Осмысленный User-Agent для A/B/C |
+- It is **not** “found” inside Reddit’s website settings — it is a **string you define** (see master concept and [Reddit API wiki](https://github.com/reddit-archive/reddit/wiki/API)).
+- The agent should **propose a draft** if the user is unsure, then save the approved value to KV as `reddit_app_user_agent`.
 
-## Публикация в Extella
+## KV keys (recommended names)
 
-Скрипт `bootstrap_api.py` добавляет заголовки **`X-Profile-Id: default`** и **`X-Agent-Id: agent_extella_default`** (как в примере curl Extella). Переопределение: переменные `EXTELLA_PROFILE_ID` и `EXTELLA_AGENT_ID`.
+| Key | Use |
+|-----|-----|
+| `reddit_client_id` | Method **A** (OAuth) |
+| `reddit_client_secret` | Method **A** |
+| `reddit_app_user_agent` | Methods **A**, **B**, **C** |
+
+## Publish to Extella
+
+`bootstrap_api.py` sends **`X-Profile-Id: default`** and **`X-Agent-Id: agent_extella_default`** (Extella curl convention). Override with `EXTELLA_PROFILE_ID` and `EXTELLA_AGENT_ID` if needed.
 
 ```bash
 export EXTELLA_API_TOKEN="your-token"
 cd preset_reddit_insights/scripts
-python3 bootstrap_api.py --dry-run   # проверить состав запросов
-python3 bootstrap_api.py             # загрузить концепты и эксперты
+python3 bootstrap_api.py --dry-run
+python3 bootstrap_api.py
 ```
 
-Повторный `concept/add` создаёт **новые** записи; при необходимости дедупликацию делайте вручную в UI или через `concept/update`.
+Each `concept/add` creates a **new** row; dedupe or use `concept/update` in the UI if you re-upload often.
 
-## Методы
+## Methods
 
-- **A:** OAuth `client_credentials`, листинги через `oauth.reddit.com`.
-- **B:** Публичные `.json` без OAuth (`www.reddit.com`).
-- **C:** Листинги как у **B**, комментарии через `old.reddit.com` (или `B` для комментариев — параметр `comments_engine`).
+- **A:** OAuth `client_credentials`, `oauth.reddit.com` listings.
+- **B:** Public `.json` on `www.reddit.com`.
+- **C:** Same listings as **B**; comments via `old.reddit.com` (or `B` for comments via `comments_engine`).
 
-## Спайк
+## Spike
 
 ```bash
 cd preset_reddit_insights/spike
 python3 spike_reddit_json.py
 ```
 
-Обновит [SPIKE_RESULTS.md](SPIKE_RESULTS.md).
+Refreshes [SPIKE_RESULTS.md](SPIKE_RESULTS.md).
 
-## Ссылки
+## Links
 
-- Обзор неофициальных JSON-подходов: [Roundproxies — How to Scrape Reddit](https://roundproxies.com/blog/reddit/)
-- User-Agent и `.json`: [Simon Willison TIL](https://til.simonwillison.net/reddit/scraping-reddit-json)
+- [Roundproxies — How to Scrape Reddit](https://roundproxies.com/blog/reddit/)
+- [Simon Willison — Reddit JSON](https://til.simonwillison.net/reddit/scraping-reddit-json)

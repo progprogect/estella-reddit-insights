@@ -1,22 +1,23 @@
-# RateLimit_Policy — сеть и устойчивость
+# RateLimit_Policy — network and resilience
 
 ## User-Agent
-- Всегда задавать **осмысленный** User-Agent (не значение по умолчанию библиотеки).
-- Шаблон: `AppName/semver (purpose; contact: ...)`
+- Always send a **meaningful** `User-Agent` (not a library default string).
+- Pattern: `AppName/semver (purpose; contact: ...)`
+- KV key: `reddit_app_user_agent` — if the user is unsure, **generate a draft** for them (see master concept), confirm, then store in KV.
 
-## Скорость
-- Между HTTP-запросами к Reddit: **2.0–4.0 с** случайная задержка (jitter), если не указано иное пользователем.
-- Параллельный fan-out к Reddit **не использовать по умолчанию** (риск 429).
+## Speed
+- Between Reddit HTTP calls: **2.0–4.0 s** random jitter unless the user overrides.
+- Do **not** default to parallel fan-out to Reddit (429 risk).
 
 ## 429 Too Many Requests
-1. Прочитать заголовок `Retry-After` (секунды) и подождать.
-2. Если нет — sleep **60 с**, повторить до **3** раз на тот же URL.
-3. Если не удалось — вернуть `status=error` с текстом и **частичными** данными (если уже собраны) в файлах промежуточного пайплайна.
+1. Read `Retry-After` (seconds) and wait.
+2. If missing — sleep **60 s**, retry up to **3** times for that URL.
+3. If still failing — return `status=error` with message and **partial** data if files already exist.
 
-## Лимиты объёма (дефолты)
-- `max_pages` листинга: **5**
-- Постов для комментариев: **10** (параметр `max_posts_for_comments`, настраивается)
-- `comment_limit` в URL old.reddit: **100** (макс. ориентир 500)
+## Volume defaults
+- Listing `max_pages`: **5**
+- Posts to expand for comments: **10** (`max_posts_for_comments`, configurable)
+- `comment_limit` in old.reddit URL: **100** (ceiling ~**500**)
 
-## Ссылки
-- Публичные `.json` endpoints и комментарии old.reddit описаны в открытых материалах (например, обзор на [Roundproxies](https://roundproxies.com/blog/reddit/)); следить за изменениями Reddit.
+## References
+- Public `.json` and old.reddit patterns are described in open guides (e.g. [Roundproxies — How to Scrape Reddit](https://roundproxies.com/blog/reddit/)); Reddit may change behavior over time.

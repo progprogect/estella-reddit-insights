@@ -1,28 +1,28 @@
-# Excel_Output_Contract — формат выгрузки
+# Excel_Output_Contract — export format
 
-## Файл
-- Расширение: `.xlsx`
-- Путь: `{output_dir}/{workbook_name}.xlsx` (каталог с `expanduser`, например `~/Downloads/EstellaReddit`)
-- Листы:
-  - `posts` — найденные посты (листинги)
-  - `comments` — комментарии (если включён шаг `reddit_fetch_comments`; иначе лист пустой с заголовками)
+## File
+- Extension: `.xlsx`
+- Path: `{output_dir}/{workbook_name}.xlsx` (directory with `expanduser`, e.g. `~/Downloads/EstellaReddit`)
+- Sheets:
+  - `posts` — listing posts found
+  - `comments` — comments if `reddit_fetch_comments` ran; otherwise empty sheet with headers
 
-## Колонки (минимум)
-Общие идеи столбцов (реализация в `reddit_export_xlsx`):
-- `record_id` — стабильный id (`t3_` / `t1_` или id из Reddit)
+## Columns (minimum)
+Implemented in `reddit_export_xlsx`:
+- `record_id` — stable id (`t3_` / `t1_` or Reddit id)
 - `kind` — `post` | `comment`
 - `subreddit`
-- `title` — для поста; пусто для комментария
-- `body` — selftext или текст комментария (укороченный при необходимости в нормализации не делаем — Excel может быть большим; при риске — optional max length в параметрах эксперта позже)
-- `permalink` — полная URL `https://www.reddit.com...`
-- `url` — ссылка поста (для постов)
+- `title` — post only; empty for comments
+- `body` — selftext or comment body (truncation policy can be extended later)
+- `permalink` — full URL `https://www.reddit.com...`
+- `url` — post link (posts)
 - `author`
 - `created_utc` — ISO UTC
 - `score`
-- `num_comments` — для постов
-- `parent_id` / `parent_permalink` — для комментариев (если доступно)
-- `depth` — глубина в дереве (0 = top-level)
+- `num_comments` — posts
+- `parent_id` / `parent_permalink` — comments when available
+- `depth` — tree depth (0 = top-level)
 - `source_method` — `A` | `B` | `C`
 
-## Локальное выполнение
-Экспорт выполнять на **локальном target**, чтобы pandas/openpyxl имели доступ к файловой системе пользователя.
+## Local execution
+Run export on the user’s machine via **Extella’s resolved local execution context** so `pandas` / `openpyxl` can write to the user’s filesystem. **Do not** assume or document one global default device UUID; the platform assigns the correct per-user **target** when running locally.

@@ -1,21 +1,24 @@
-# Method_A_OAuth_Setup — официальный Reddit API (чтение)
+# Method_A_OAuth_Setup — official Reddit API (read)
 
-## Когда использовать
-Метод **A**: OAuth **client_credentials** (приложение без пользовательского логина) для чтения публичных данных через `oauth.reddit.com`. Подходит для отчётности и более предсказуемых лимитов, чем у «голого» скрейпа.
+## When to use
+Method **A**: OAuth **`client_credentials`** (application-only, no end-user Reddit login) to read public data via `oauth.reddit.com`. Useful for reporting and more predictable limits than ad-hoc scraping.
 
-## Что подготовить
-1. Reddit: **Create App** (тип **script** или **web app** — для client_credentials обычно используются `client_id` и `client_secret` из приложения).
-2. В **KV Store** Extella сохранить:
-   - `reddit_client_id` — идентификатор приложения.
-   - `reddit_client_secret` — секрет приложения.
-3. (Рекомендуется) KV-ключ `reddit_app_user_agent` — строка вида `YourApp/1.0 by /u/yourname` (Reddit требует осмысленный User-Agent).
+## What to prepare
+1. Reddit: **Create App** (often **script** or **web app**; use the app’s `client_id` and `client_secret`).
+2. In Extella **KV Store** save:
+   - `reddit_client_id`
+   - `reddit_client_secret`
+3. (Recommended) KV key `reddit_app_user_agent` — see the master concept section **`reddit_app_user_agent`**: compose or offer a generated draft, then store in KV.
 
-## Что делает пресет
-Эксперт `reddit_fetch_pages` для метода **A** получает access token (`/api/v1/access_token`), затем ходит на `oauth.reddit.com` согласно параметрам из `reddit_discover`.
+## What the preset does
+Expert `reddit_fetch_pages` for **A** obtains an access token (`POST /api/v1/access_token`), then calls `oauth.reddit.com` according to parameters from `reddit_discover`.
 
-## Ограничения
-- Нужны действующие ключи Reddit; политика квот — по правилам Reddit.
-- Секреты **никогда** не вписывать в концепты — только имена KV-ключей выше.
+## Limits
+- Valid Reddit app credentials required; quotas follow Reddit policy.
+- Never put secrets in concepts — only the KV key names above.
 
-## Проверка перед запуском
-Вызвать эксперт `reddit_kv_check` с `method="A"` — он проверит, что нужные ключи не пустые (значения агент подставляет из KV в параметры запуска).
+## Before run
+Call expert `reddit_kv_check` with `method="A"` — it checks required fields are non-empty (the agent injects KV values into run params).
+
+## Execution target
+For Excel on disk, rely on **Extella’s per-user resolved local execution target**. Do not instruct users to paste a fixed default device UUID from documentation.

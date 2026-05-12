@@ -39,7 +39,7 @@ EXPERTS: list[dict] = [
         "description": (
             "Validates required parameters for Reddit preset by method. "
             "Parameters: method — A|B|C; reddit_client_id, reddit_client_secret — required for A; "
-            "app_user_agent — recommended (KV key reddit_app_user_agent)."
+            "app_user_agent — required (KV reddit_app_user_agent or user-approved draft; agent may propose a UA string per Reddit rules)."
         ),
         "kwargs": {
             "method": "B",

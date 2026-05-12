@@ -1,15 +1,15 @@
-# Reddit_JSON_Spike_Results — эмпирика окружения
+# Reddit_JSON_Spike_Results — environment check
 
-Источник: локальный спайк `preset_reddit_insights/spike/spike_reddit_json.py`, артефакт `SPIKE_RESULTS.md`.
+Source: local script `preset_reddit_insights/spike/spike_reddit_json.py`, artifact `SPIKE_RESULTS.md`.
 
-## Выводы (кратко)
-- `search.json` и `r/{sub}/hot.json` отвечали **HTTP 200** с корректным User-Agent.
-- Пагинация `after` на 2 страницах — **200** для обеих.
-- `old.reddit.com/comments/{id}.json` — ответ из **двух** листингов, верхнеуровневые комментарии присутствуют.
+## Findings (short)
+- `search.json` and `r/{sub}/hot.json` returned **HTTP 200** with a proper `User-Agent`.
+- Pagination with `after` for 2 pages — **200** for both.
+- `old.reddit.com/comments/{id}.json` — response had **two** listings; top-level comments present.
 
-## Рекомендованные дефолты пресета
-См. также мастер-концепт:
-- Jitter **2.0–4.0 с** между страницами.
+## Recommended preset defaults
+Also see the master concept:
+- Jitter **2.0–4.0 s** between pages.
 - `max_pages = 5`.
-- `comment_limit` default **100** (потолок ориентир **500**).
-- Обработка **429** с `Retry-After` либо backoff 60 с, до 3 попыток.
+- Default `comment_limit` **100** (ceiling ~**500**).
+- **429**: `Retry-After` or 60 s backoff, up to 3 attempts.

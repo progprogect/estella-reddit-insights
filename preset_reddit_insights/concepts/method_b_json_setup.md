@@ -1,19 +1,22 @@
-# Method_B_JSON_Setup — публичные `.json` endpoints
+# Method_B_JSON_Setup — public `.json` endpoints
 
-## Когда использовать
-Метод **B**: HTTP GET к публичным JSON-страницам Reddit (`search.json`, `/r/{sub}/hot.json` и т.д.) **без OAuth**.
+## When to use
+Method **B**: HTTP GET to Reddit’s public JSON pages (`search.json`, `/r/{sub}/hot.json`, etc.) **without OAuth**.
 
-## Плюсы / минусы (для пользователя)
-- **Плюсы:** минимальная подготовка; структурированный JSON.
-- **Минусы:** жёсткие лимиты по IP/User-Agent; возможны 429; неофициальный контракт может меняться.
+## Pros / cons (user-facing)
+- **Pros:** Minimal setup; structured JSON.
+- **Cons:** Strict IP / `User-Agent` limits; possible **429**; unofficial contract may change.
 
-## Что подготовить
-1. Рекомендуется завести в KV строку `reddit_app_user_agent` (осмысленный User-Agent — см. мастер-концепт).
-2. Убедиться, что эксперты выполняются **локально** (`target` = устройство пользователя), если нужен доступ к `output_dir` на диске.
+## What to prepare
+1. KV key `reddit_app_user_agent` — see master concept **`reddit_app_user_agent`**: explain it is user-defined (not “found” in Reddit UI), offer a **generated draft** if the user is stuck, confirm, then save to KV.
+2. For Excel and intermediate JSON files on the user’s machine: run experts via **Extella’s per-user local execution** so the platform applies the correct **target** automatically. **Do not** document a single shared default device UUID for all users.
 
-## Поведение пресета
-- `reddit_discover` формирует конфигурацию (`mode`: `search` | `subreddit_hot` | `subreddit_new`).
-- `reddit_fetch_pages` делает запросы с **jitter**, пагинацией `after`, обработкой **429** (см. `RateLimit_Policy`).
+## Preset behavior
+- `reddit_discover` builds config (`mode`: `search` | `subreddit_hot` | `subreddit_new`).
+- `reddit_fetch_pages` uses **jitter**, `after` pagination, and **429** handling (see `RateLimit_Policy`).
 
-## Настройки по умолчанию
-См. `Reddit_JSON_Spike_Results` и мастер-концепт: `max_pages=5`, задержка 2–4 с между страницами.
+## Defaults
+See `Reddit_JSON_Spike_Results` and the master concept: `max_pages=5`, **2–4 s** jitter between pages.
+
+## Execution target
+Same as all methods: **Extella resolves the user’s execution target** for local filesystem output — no preset-wide hardcoded device id.
