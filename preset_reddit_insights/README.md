@@ -46,7 +46,7 @@ Example: **Run `Reddit Insights → Excel (master)`**
 
 ## Publish to Extella
 
-`bootstrap_api.py` reads **`/.env`** at the **repository root** (if present): `EXTELLA_API_TOKEN`, `EXTELLA_PROFILE_ID`, `EXTELLA_AGENT_ID`. Existing shell variables take precedence. Copy [`.env.example`](../../.env.example) to `.env` and fill the token — **`.env` is gitignored.**
+`bootstrap_api.py` reads **`.env`** at the **repository root** (if present): `EXTELLA_API_TOKEN`, `EXTELLA_PROFILE_ID`, `EXTELLA_AGENT_ID`. Existing shell variables take precedence. Copy [`.env.example`](../.env.example) to `.env` and fill the token — **`.env` is gitignored.**
 
 `bootstrap_api.py` also sends **`X-Profile-Id: default`** and **`X-Agent-Id: agent_extella_default`** unless overridden by env.
 
