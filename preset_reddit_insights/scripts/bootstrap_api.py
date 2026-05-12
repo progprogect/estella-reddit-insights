@@ -3,7 +3,7 @@
 Upload preset concepts + experts to Extella via REST API.
 
 Requires:
-  export EXTELLA_API_TOKEN="..."   # or EXTELLA_TOKEN (same value as in Extella CLI docs)
+  EXTELLA_API_TOKEN (or EXTELLA_TOKEN) — from the environment, or from a repo-root `.env` file (see `.env.example`; `.env` is gitignored).
 
 Optional (defaults match Extella platform conventions):
   export EXTELLA_PROFILE_ID="default"          # X-Profile-Id (default: default)
@@ -24,8 +24,28 @@ from pathlib import Path
 import requests
 
 ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = ROOT.parent
 CONCEPTS_DIR = ROOT / "concepts"
 EXPERTS_DIR = ROOT / "experts"
+
+
+def _load_env_file() -> None:
+    """Load KEY=value from repo-root `.env` if present. Does not override existing os.environ."""
+    path = REPO_ROOT / ".env"
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        s = line.strip()
+        if not s or s.startswith("#") or "=" not in s:
+            continue
+        key, _, val = s.partition("=")
+        key = key.strip()
+        val = val.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = val
+
+
+_load_env_file()
 
 BASE_URL = os.environ.get("EXTELLA_BASE_URL", "https://api.extella.ai").rstrip("/")
 TOKEN = os.environ.get("EXTELLA_API_TOKEN") or os.environ.get("EXTELLA_TOKEN") or ""
