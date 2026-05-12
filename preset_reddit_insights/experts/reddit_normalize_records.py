@@ -5,61 +5,6 @@ include("from pathlib import Path", [])
 include("from typing import Optional, Union", [])
 
 
-def _full_permalink(permalink: str) -> str:
-    p = (permalink or "").strip()
-    if not p:
-        return ""
-    if p.startswith("http"):
-        return p
-    if p.startswith("/"):
-        return "https://www.reddit.com" + p
-    return "https://www.reddit.com/" + p
-
-
-def _utc_iso(ts: Optional[Union[float, int]]) -> str:
-    if ts is None:
-        return ""
-    try:
-        return datetime.fromtimestamp(float(ts), tz=timezone.utc).isoformat()
-    except Exception:
-        return ""
-
-
-def _walk_replies(replies_obj, depth: int, post_subreddit: str, source_method: str, post_permalink: str):
-    if not replies_obj or isinstance(replies_obj, str):
-        return
-    if not isinstance(replies_obj, dict):
-        return
-    children = replies_obj.get("data", {}).get("children", [])
-    for ch in children:
-        if not isinstance(ch, dict):
-            continue
-        if ch.get("kind") != "t1":
-            continue
-        d = ch.get("data") or {}
-        rid = d.get("id", "")
-        rec = {
-            "record_id": ("t1_" + rid) if rid else "",
-            "kind": "comment",
-            "subreddit": d.get("subreddit") or post_subreddit,
-            "title": "",
-            "body": (d.get("body") or "")[:50000],
-            "permalink": _full_permalink(d.get("permalink", "")),
-            "url": "",
-            "author": d.get("author", ""),
-            "created_utc": _utc_iso(d.get("created_utc")),
-            "score": d.get("score", ""),
-            "num_comments": "",
-            "parent_id": d.get("parent_id", ""),
-            "parent_permalink": post_permalink,
-            "depth": depth,
-            "source_method": source_method,
-        }
-        yield rec
-        for sub in _walk_replies(d.get("replies"), depth + 1, post_subreddit, source_method, post_permalink):
-            yield sub
-
-
 def reddit_normalize_records(
     listings_path: str = "",
     comments_path: str = "",
@@ -67,6 +12,59 @@ def reddit_normalize_records(
     comments_engine: str = "C",
 ) -> dict:
     """Flattens listings + optional comment threads into normalized JSON for Excel export."""
+
+    def _full_permalink(permalink: str) -> str:
+        p = (permalink or "").strip()
+        if not p:
+            return ""
+        if p.startswith("http"):
+            return p
+        if p.startswith("/"):
+            return "https://www.reddit.com" + p
+        return "https://www.reddit.com/" + p
+
+    def _utc_iso(ts: Optional[Union[float, int]]) -> str:
+        if ts is None:
+            return ""
+        try:
+            return datetime.fromtimestamp(float(ts), tz=timezone.utc).isoformat()
+        except Exception:
+            return ""
+
+    def _walk_replies(replies_obj, depth: int, post_subreddit: str, source_method: str, post_permalink: str):
+        if not replies_obj or isinstance(replies_obj, str):
+            return
+        if not isinstance(replies_obj, dict):
+            return
+        children = replies_obj.get("data", {}).get("children", [])
+        for ch in children:
+            if not isinstance(ch, dict):
+                continue
+            if ch.get("kind") != "t1":
+                continue
+            d = ch.get("data") or {}
+            rid = d.get("id", "")
+            rec = {
+                "record_id": ("t1_" + rid) if rid else "",
+                "kind": "comment",
+                "subreddit": d.get("subreddit") or post_subreddit,
+                "title": "",
+                "body": (d.get("body") or "")[:50000],
+                "permalink": _full_permalink(d.get("permalink", "")),
+                "url": "",
+                "author": d.get("author", ""),
+                "created_utc": _utc_iso(d.get("created_utc")),
+                "score": d.get("score", ""),
+                "num_comments": "",
+                "parent_id": d.get("parent_id", ""),
+                "parent_permalink": post_permalink,
+                "depth": depth,
+                "source_method": source_method,
+            }
+            yield rec
+            for sub in _walk_replies(d.get("replies"), depth + 1, post_subreddit, source_method, post_permalink):
+                yield sub
+
     print("[1/3] reddit_normalize_records: validate...")
     if not listings_path:
         return {"status": "error", "message": "listings_path is required"}
